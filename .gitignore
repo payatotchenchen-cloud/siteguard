@@ -1,0 +1,4 @@
+node_modules
+smartsite.db
+smartsite.db-wal
+smartsite.db-shm

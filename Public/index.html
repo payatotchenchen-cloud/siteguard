@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SiteGuard | Smart Construction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="login" class="login hidden">
+  <form id="loginForm">
+    <div class="brand">SITE<b>GUARD</b></div>
+    <p class="muted">Worker safety &amp; site operations</p>
+    <label>Username<input name="username" autocomplete="username" required></label>
+    <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+    <p id="loginErr" class="err"></p>
+    <button class="btn">Sign in</button>
+  </form>
+</div>
+<div id="shell" class="shell hidden">
+  <aside>
+    <div class="brand">SITE<b>GUARD</b></div>
+    <nav id="nav">
+      <a href="#dash">Overview</a><a href="#workers">Workers</a><a href="#map">Live map</a><a href="#events">Event log</a>
+    </nav>
+    <button class="link" id="logout">Sign out</button>
+  </aside>
+  <main>
+    <header><h1 id="title"></h1><button id="bell" class="bell">Alerts <span id="badge">0</span></button></header>
+    <div id="view"></div>
+  </main>
+  <div id="panel" class="panel"><h3>Notifications</h3><ul id="notes" class="list"></ul></div>
+</div>
+<dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
+<div id="toasts"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
