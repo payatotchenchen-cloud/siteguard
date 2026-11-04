@@ -103,15 +103,46 @@ const views = {
       $('#dlg').showModal();
     }
   },
-  map: {
+    map: {
     title: 'Live tracking',
     async render(el) {
       const { site } = await api('/metrics');
-      el.innerHTML = '<div id="map"></div>'; markers = {};
+      this.site = { ...site }; markers = {};
+      el.innerHTML = `<div class="row" style="justify-content:flex-start;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <input id="q" placeholder="Search an address or place" style="min-width:260px">
+        <button class="btn ghost" id="go">Search</button>
+        <label style="grid-auto-flow:column;align-items:center;gap:8px">Radius (m)<input id="rad" type="number" min="20" max="5000" value="${site.radius}" style="width:90px"></label>
+        <button class="btn" id="save">Save site area</button>
+        <span class="muted" id="hint">Click the map to move the site centre.</span></div><div id="map"></div>`;
       map = L.map('map').setView([site.lat, site.lng], 17);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-      L.circle([site.lat, site.lng], { radius: site.radius, color: '#f5a524', weight: 2, dashArray: '6 6', fillOpacity: .05 }).addTo(map);
+      this.ring = L.circle([site.lat, site.lng], { radius: site.radius, color: '#f5a524', weight: 2, dashArray: '6 6', fillOpacity: .05 }).addTo(map);
+      const legend = L.control({ position: 'bottomright' });
+      legend.onAdd = () => {
+        const d = L.DomUtil.create('div', 'legend'); d.id = 'legend';
+        L.DomEvent.disableClickPropagation(d); // clicking the legend must not move the site centre
+        return d;
+      };
+      legend.addTo(map);
+      map.on('click', e => { this.site.lat = e.latlng.lat; this.site.lng = e.latlng.lng; this.ring.setLatLng(e.latlng); });
+      $('#rad').oninput = e => { this.site.radius = +e.target.value || 20; this.ring.setRadius(this.site.radius); };
+      $('#go').onclick = () => this.search();
+      $('#q').onkeydown = e => { if (e.key === 'Enter') this.search(); };
+      $('#save').onclick = async () => {
+        try { this.site = { ...(await api('/site', { method: 'PUT', body: this.site })) }; $('#hint').textContent = 'Saved. Geofence updated.'; }
+        catch (err) { $('#hint').textContent = err.message; }
+      };
       this.live();
+    },
+    async search() {
+      const q = $('#q').value.trim(); if (!q) return;
+      try {
+        const r = await (await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q))).json();
+        if (!r.length) { $('#hint').textContent = 'No match found.'; return; }
+        const ll = L.latLng(+r[0].lat, +r[0].lon);
+        this.site.lat = ll.lat; this.site.lng = ll.lng; this.ring.setLatLng(ll); map.setView(ll, 17);
+        $('#hint').textContent = 'Found. Adjust the radius if needed, then Save.';
+      } catch { $('#hint').textContent = 'Search failed. Click the map instead.'; }
     },
     live() {
       if (!map || !$('#map')) return;
@@ -121,6 +152,16 @@ const views = {
         const m = markers[w.id] ??= L.circleMarker([w.lat, w.lng], { radius: 9, weight: 2, fillOpacity: .85 }).addTo(map);
         m.setLatLng([w.lat, w.lng]).setStyle({ color: col[w.status], fillColor: col[w.status] }).bindTooltip(`${esc(w.name)} · ${esc(w.zone)}<br>HR ${w.hr} · helmet ${w.helmet ? 'on' : 'off'}`);
       });
+      const lg = $('#legend');
+      if (lg) {
+        const n = s => workers.filter(w => w.status === s).length;
+        lg.innerHTML = `<b>Legend</b>
+          <div><i style="background:#3fb67a"></i>Safe<em>${n('safe')}</em></div>
+          <div><i style="background:#f5a524"></i>Warning<em>${n('warning')}</em></div>
+          <div><i style="background:#ef4b4b"></i>Critical<em>${n('critical')}</em></div>
+          <div><i class="ring"></i>Site boundary</div>
+          <small>Warning: helmet off, outside the site area, or high heart rate. Critical: fall detected.</small>`;
+      }
     }
   },
   events: {

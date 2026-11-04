@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS events(
   type TEXT NOT NULL, severity TEXT NOT NULL, message TEXT, ts TEXT NOT NULL, ack INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS tasks(id INTEGER PRIMARY KEY, name TEXT, zone TEXT, planned INTEGER, done INTEGER);
 CREATE TABLE IF NOT EXISTS equipment_logs(id INTEGER PRIMARY KEY, equipment TEXT, active_h REAL, idle_h REAL, day TEXT);
+CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT);
 `);
 
 if (!db.prepare('SELECT COUNT(*) n FROM users').get().n) {

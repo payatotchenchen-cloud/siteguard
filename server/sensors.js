@@ -1,7 +1,10 @@
 // Sensor layer: one ingest() entry point, fed either by the mock simulator,
 // by polling a real API (SENSOR_API_URL), or by devices POSTing to /api/ingest.
 const db = require('./db');
-const SITE = { lat: 14.6507, lng: 120.9835, radius: 220 }; // geofence centre + radius (m)
+// Geofence centre + radius (m). Env vars set the defaults; a value saved from the map screen overrides them.
+const SITE = { lat: +process.env.SITE_LAT || 14.6507, lng: +process.env.SITE_LNG || 120.9835, radius: +process.env.SITE_RADIUS || 220, name: 'Main site' };
+const saved = db.prepare("SELECT value FROM settings WHERE key='site'").get();
+if (saved) Object.assign(SITE, JSON.parse(saved.value));
 const clients = new Set();                                  // SSE subscribers
 const pos = {};                                             // simulator state
 
@@ -68,4 +71,15 @@ function start(ms = 3000) {
     } catch (e) { console.error('sensor tick failed:', e.message); }
   }, ms);
 }
-module.exports = { start, ingest, clients, SITE };
+// Move simulated workers to the site centre so a new site doesn't trigger false geofence alerts.
+function resetWorkers() {
+  Object.keys(pos).forEach(k => delete pos[k]);
+  db.prepare("UPDATE workers SET lat=?,lng=?,status='safe'").run(SITE.lat, SITE.lng);
+}
+function setSite(s) {
+  Object.assign(SITE, s);
+  db.prepare("INSERT INTO settings(key,value) VALUES('site',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(JSON.stringify(SITE));
+  resetWorkers();
+}
+if (!process.env.SENSOR_API_URL) resetWorkers(); // mock mode only
+module.exports = { start, ingest, clients, SITE, setSite };

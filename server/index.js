@@ -83,6 +83,16 @@ app.get('/api/metrics', auth, (_q, res) => res.json({
   site: sensors.SITE
 }));
 
+// ---- site area (geofence) ----
+app.get('/api/site', auth, (_q, res) => res.json(sensors.SITE));
+app.put('/api/site', auth, adminOnly, (req, res) => {
+  const lat = +req.body.lat, lng = +req.body.lng, radius = +req.body.radius;
+  if (!(lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && radius >= 20 && radius <= 5000))
+    return res.status(400).json({ error: 'Invalid location or radius (20 to 5000 m)' });
+  sensors.setSite({ lat, lng, radius, name: String(req.body.name || 'Site').slice(0, 60) });
+  res.json(sensors.SITE);
+});
+
 // ---- device ingest (real hardware / gateway posts here) ----
 app.post('/api/ingest', (req, res) => {
   if (req.headers['x-api-key'] !== DEVICE_KEY) return res.status(401).json({ error: 'Bad API key' });
