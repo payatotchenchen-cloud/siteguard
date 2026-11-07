@@ -48,3 +48,7 @@ dialog::backdrop{background:#000a}dialog form{display:grid;gap:12px}.row{display
 .legend i.ring{background:none;border:2px dashed #f5a524}
 .legend em{float:right;font:500 12px 'IBM Plex Mono',monospace;color:#7d8b9c;font-style:normal;margin-left:14px}
 .legend small{display:block;color:#7d8b9c;font-size:11px;line-height:1.4;margin-top:6px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel-head h3{margin:0}
+.close{background:none;border:1px solid var(--line);color:var(--mute);width:30px;height:30px;font-size:20px;line-height:1;cursor:pointer;border-radius:2px;transition:.2s}
+.close:hover{color:var(--text);border-color:var(--amber)}

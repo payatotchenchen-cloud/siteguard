@@ -32,7 +32,9 @@
     <header><h1 id="title"></h1><button id="bell" class="bell">Alerts <span id="badge">0</span></button></header>
     <div id="view"></div>
   </main>
-  <div id="panel" class="panel"><h3>Notifications</h3><ul id="notes" class="list"></ul></div>
+ <div id="panel" class="panel">
+  <div class="panel-head"><h3>Notifications</h3><button id="closePanel" class="close" aria-label="Close notifications">&times;</button></div>
+  <ul id="notes" class="list"></ul>
 </div>
 <dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
 <div id="toasts"></div>

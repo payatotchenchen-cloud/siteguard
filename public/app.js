@@ -31,6 +31,8 @@ $('#loginForm').onsubmit = async e => {
 function logout() { localStorage.removeItem('sg_token'); token = null; es?.close(); $('#shell').classList.add('hidden'); $('#login').classList.remove('hidden'); }
 $('#logout').onclick = logout;
 $('#bell').onclick = () => $('#panel').classList.toggle('open');
+$('#closePanel').onclick = () => $('#panel').classList.remove('open');
+addEventListener('keydown', e => { if (e.key === 'Escape') $('#panel').classList.remove('open'); });
 
 // ---------- live data ----------
 function connect() {
